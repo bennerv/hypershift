@@ -446,7 +446,19 @@ type ManagedAzureKeyVault struct {
 	//
 	// +kubebuilder:validation:Required
 	TenantID string `json:"tenantID"`
+
+	// Represents the encoding for the Azure Key Vault secret 
+	// Plumbs the objectEncoding for secrets store provider - https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/website/content/en/getting-started/usage/_index.md
+	//
+	// +kubebuilder:validation:Optional
+	ObjectEncoding ObjectEncodingFormat `json:"objectEncoding"`
+	
 }
+
+type ObjectEncodingFormat string
+var ObjectEncodingUTF8 ObjectEncodingFormat = "utf-8"
+var ObjectEncodingHex ObjectEncodingFormat = "hex"
+var ObjectEncodingBase64 ObjectEncodingFormat = "base64"
 
 // AzureResourceManagedIdentities contains the managed identities needed for HCP control plane and data plane components
 // that authenticate with Azure's API.
