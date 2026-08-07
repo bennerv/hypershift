@@ -17,6 +17,10 @@ limitations under the License.
 
 package v1beta1
 
+import (
+	hypershiftv1beta1 "github.com/openshift/hypershift/api/hypershift/v1beta1"
+)
+
 // AzureNodePoolPlatformApplyConfiguration represents a declarative configuration of the AzureNodePoolPlatform type for use
 // with apply.
 type AzureNodePoolPlatformApplyConfiguration struct {
@@ -25,6 +29,8 @@ type AzureNodePoolPlatformApplyConfiguration struct {
 	OSDisk           *AzureNodePoolOSDiskApplyConfiguration `json:"osDisk,omitempty"`
 	AvailabilityZone *string                                `json:"availabilityZone,omitempty"`
 	EncryptionAtHost *string                                `json:"encryptionAtHost,omitempty"`
+	SecurityType     *hypershiftv1beta1.AzureSecurityType   `json:"securityType,omitempty"`
+	UefiSettings     *AzureUefiSettingsApplyConfiguration   `json:"uefiSettings,omitempty"`
 	SubnetID         *string                                `json:"subnetID,omitempty"`
 	Diagnostics      *DiagnosticsApplyConfiguration         `json:"diagnostics,omitempty"`
 }
@@ -72,6 +78,22 @@ func (b *AzureNodePoolPlatformApplyConfiguration) WithAvailabilityZone(value str
 // If called multiple times, the EncryptionAtHost field is set to the value of the last call.
 func (b *AzureNodePoolPlatformApplyConfiguration) WithEncryptionAtHost(value string) *AzureNodePoolPlatformApplyConfiguration {
 	b.EncryptionAtHost = &value
+	return b
+}
+
+// WithSecurityType sets the SecurityType field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the SecurityType field is set to the value of the last call.
+func (b *AzureNodePoolPlatformApplyConfiguration) WithSecurityType(value hypershiftv1beta1.AzureSecurityType) *AzureNodePoolPlatformApplyConfiguration {
+	b.SecurityType = &value
+	return b
+}
+
+// WithUefiSettings sets the UefiSettings field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the UefiSettings field is set to the value of the last call.
+func (b *AzureNodePoolPlatformApplyConfiguration) WithUefiSettings(value *AzureUefiSettingsApplyConfiguration) *AzureNodePoolPlatformApplyConfiguration {
+	b.UefiSettings = value
 	return b
 }
 

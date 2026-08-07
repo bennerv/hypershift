@@ -455,6 +455,171 @@ func TestAzureMachineTemplateSpec(t *testing.T) {
 			expectedErr: false,
 		},
 		{
+			name: "When securityType is TrustedLaunch it should set SecurityProfile with UEFI defaults",
+			nodePool: &hyperv1.NodePool{
+				Spec: hyperv1.NodePoolSpec{
+					Platform: hyperv1.NodePoolPlatform{
+						Type: hyperv1.AzurePlatform,
+						Azure: &hyperv1.AzureNodePoolPlatform{
+							Image: hyperv1.AzureVMImage{
+								Type:    hyperv1.ImageID,
+								ImageID: ptr.To("testImageID"),
+							},
+							SubnetID:     "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName/providers/Microsoft.Network/virtualNetworks/testVnetName/subnets/testSubnetName",
+							VMSize:       "Standard_D2_v2",
+							SecurityType: hyperv1.AzureSecurityTypeTrustedLaunch,
+							OSDisk: hyperv1.AzureNodePoolOSDisk{
+								SizeGiB:                30,
+								DiskStorageAccountType: "Standard_LRS",
+							},
+						},
+					},
+				},
+			},
+			expectedAzureMachineTemplateSpec: &capiazure.AzureMachineTemplateSpec{
+				Template: capiazure.AzureMachineTemplateResource{
+					ObjectMeta: clusterv1.ObjectMeta{Labels: nil, Annotations: nil},
+					Spec: capiazure.AzureMachineSpec{
+						VMSize:        "Standard_D2_v2",
+						FailureDomain: nil,
+						Image: &capiazure.Image{
+							ID: ptr.To("testImageID"),
+						},
+						OSDisk: capiazure.OSDisk{
+							DiskSizeGB: ptr.To[int32](30),
+							ManagedDisk: &capiazure.ManagedDiskParameters{
+								StorageAccountType: "Standard_LRS",
+							},
+						},
+						SSHPublicKey: dummySSHKey,
+						SecurityProfile: &capiazure.SecurityProfile{
+							SecurityType: capiazure.SecurityTypesTrustedLaunch,
+							UefiSettings: &capiazure.UefiSettings{
+								SecureBootEnabled: ptr.To(true),
+								VTpmEnabled:       ptr.To(true),
+							},
+						},
+						NetworkInterfaces: []capiazure.NetworkInterface{
+							{SubnetName: "testSubnetName"},
+						},
+					},
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "When securityType is TrustedLaunch with SecureBoot disabled it should set SecurityProfile accordingly",
+			nodePool: &hyperv1.NodePool{
+				Spec: hyperv1.NodePoolSpec{
+					Platform: hyperv1.NodePoolPlatform{
+						Type: hyperv1.AzurePlatform,
+						Azure: &hyperv1.AzureNodePoolPlatform{
+							Image: hyperv1.AzureVMImage{
+								Type:    hyperv1.ImageID,
+								ImageID: ptr.To("testImageID"),
+							},
+							SubnetID:     "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName/providers/Microsoft.Network/virtualNetworks/testVnetName/subnets/testSubnetName",
+							VMSize:       "Standard_D2_v2",
+							SecurityType: hyperv1.AzureSecurityTypeTrustedLaunch,
+							UefiSettings: &hyperv1.AzureUefiSettings{
+								SecureBoot: "Disabled",
+								VTpm:       "Enabled",
+							},
+							OSDisk: hyperv1.AzureNodePoolOSDisk{
+								SizeGiB:                30,
+								DiskStorageAccountType: "Standard_LRS",
+							},
+						},
+					},
+				},
+			},
+			expectedAzureMachineTemplateSpec: &capiazure.AzureMachineTemplateSpec{
+				Template: capiazure.AzureMachineTemplateResource{
+					ObjectMeta: clusterv1.ObjectMeta{Labels: nil, Annotations: nil},
+					Spec: capiazure.AzureMachineSpec{
+						VMSize:        "Standard_D2_v2",
+						FailureDomain: nil,
+						Image: &capiazure.Image{
+							ID: ptr.To("testImageID"),
+						},
+						OSDisk: capiazure.OSDisk{
+							DiskSizeGB: ptr.To[int32](30),
+							ManagedDisk: &capiazure.ManagedDiskParameters{
+								StorageAccountType: "Standard_LRS",
+							},
+						},
+						SSHPublicKey: dummySSHKey,
+						SecurityProfile: &capiazure.SecurityProfile{
+							SecurityType: capiazure.SecurityTypesTrustedLaunch,
+							UefiSettings: &capiazure.UefiSettings{
+								SecureBootEnabled: ptr.To(false),
+								VTpmEnabled:       ptr.To(true),
+							},
+						},
+						NetworkInterfaces: []capiazure.NetworkInterface{
+							{SubnetName: "testSubnetName"},
+						},
+					},
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "When securityType is ConfidentialVM with EncryptionAtHost it should set both on SecurityProfile",
+			nodePool: &hyperv1.NodePool{
+				Spec: hyperv1.NodePoolSpec{
+					Platform: hyperv1.NodePoolPlatform{
+						Type: hyperv1.AzurePlatform,
+						Azure: &hyperv1.AzureNodePoolPlatform{
+							Image: hyperv1.AzureVMImage{
+								Type:    hyperv1.ImageID,
+								ImageID: ptr.To("testImageID"),
+							},
+							SubnetID:         "/subscriptions/testSubscriptionID/resourceGroups/testResourceGroupName/providers/Microsoft.Network/virtualNetworks/testVnetName/subnets/testSubnetName",
+							VMSize:           "Standard_DC4as_v5",
+							EncryptionAtHost: "Enabled",
+							SecurityType:     hyperv1.AzureSecurityTypeConfidentialVM,
+							OSDisk: hyperv1.AzureNodePoolOSDisk{
+								SizeGiB:                30,
+								DiskStorageAccountType: "Standard_LRS",
+							},
+						},
+					},
+				},
+			},
+			expectedAzureMachineTemplateSpec: &capiazure.AzureMachineTemplateSpec{
+				Template: capiazure.AzureMachineTemplateResource{
+					ObjectMeta: clusterv1.ObjectMeta{Labels: nil, Annotations: nil},
+					Spec: capiazure.AzureMachineSpec{
+						VMSize:        "Standard_DC4as_v5",
+						FailureDomain: nil,
+						Image: &capiazure.Image{
+							ID: ptr.To("testImageID"),
+						},
+						OSDisk: capiazure.OSDisk{
+							DiskSizeGB: ptr.To[int32](30),
+							ManagedDisk: &capiazure.ManagedDiskParameters{
+								StorageAccountType: "Standard_LRS",
+							},
+						},
+						SSHPublicKey: dummySSHKey,
+						SecurityProfile: &capiazure.SecurityProfile{
+							EncryptionAtHost: ptr.To(true),
+							SecurityType:     capiazure.SecurityTypesConfidentialVM,
+							UefiSettings: &capiazure.UefiSettings{
+								SecureBootEnabled: ptr.To(true),
+								VTpmEnabled:       ptr.To(true),
+							},
+						},
+						NetworkInterfaces: []capiazure.NetworkInterface{
+							{SubnetName: "testSubnetName"},
+						},
+					},
+				},
+			},
+			expectedErr: false,
+		},
+		{
 			name: "error case since ImageID and AzureMarketplace are not provided",
 			nodePool: &hyperv1.NodePool{
 				Spec: hyperv1.NodePoolSpec{

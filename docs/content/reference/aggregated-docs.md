@@ -42480,6 +42480,40 @@ for more information.</p>
 </tr>
 <tr>
 <td>
+<code>securityType</code></br>
+<em>
+<a href="#hypershift.openshift.io/v1beta1.AzureSecurityType">
+AzureSecurityType
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>securityType specifies the SecurityType of the virtual machine. It must be set to enable
+UefiSettings (SecureBoot, vTPM). TrustedLaunch enables Secure Boot and vTPM on supported
+VM sizes. ConfidentialVM provides hardware-based memory encryption in addition to Secure
+Boot and vTPM. Requires a Gen2 VM image. See
+<a href="https://learn.microsoft.com/en-us/azure/virtual-machines/trusted-launch">https://learn.microsoft.com/en-us/azure/virtual-machines/trusted-launch</a> for more information.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>uefiSettings</code></br>
+<em>
+<a href="#hypershift.openshift.io/v1beta1.AzureUefiSettings">
+AzureUefiSettings
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>uefiSettings specifies the UEFI security settings like Secure Boot and vTPM used while
+creating the virtual machine. Requires securityType to be set. If securityType is set and
+this is omitted, both Secure Boot and vTPM default to Enabled.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>subnetID</code></br>
 <em>
 string
@@ -43234,6 +43268,31 @@ Azure&rsquo;s API.</p>
 </tr>
 </tbody>
 </table>
+###AzureSecurityType { #hypershift.openshift.io/v1beta1.AzureSecurityType }
+<p>
+(<em>Appears on:</em>
+<a href="#hypershift.openshift.io/v1beta1.AzureNodePoolPlatform">AzureNodePoolPlatform</a>)
+</p>
+<p>
+<p>AzureSecurityType specifies the SecurityType of an Azure virtual machine.</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ConfidentialVM&#34;</p></td>
+<td><p>AzureSecurityTypeConfidentialVM enables Confidential VM capabilities,
+providing hardware-based memory encryption in addition to Secure Boot and vTPM.</p>
+</td>
+</tr><tr><td><p>&#34;TrustedLaunch&#34;</p></td>
+<td><p>AzureSecurityTypeTrustedLaunch enables Trusted Launch on the virtual machine,
+providing Secure Boot and vTPM capabilities.</p>
+</td>
+</tr></tbody>
+</table>
 ###AzureSubnetResourceID { #hypershift.openshift.io/v1beta1.AzureSubnetResourceID }
 <p>
 (<em>Appears on:</em>
@@ -43318,6 +43377,55 @@ This field is immutable once set.</p>
 <td><p>AzureTopologyPublicAndPrivate indicates the API server is accessible via both public and private endpoints.</p>
 </td>
 </tr></tbody>
+</table>
+###AzureUefiSettings { #hypershift.openshift.io/v1beta1.AzureUefiSettings }
+<p>
+(<em>Appears on:</em>
+<a href="#hypershift.openshift.io/v1beta1.AzureNodePoolPlatform">AzureNodePoolPlatform</a>)
+</p>
+<p>
+<p>AzureUefiSettings specifies the UEFI security settings for an Azure virtual machine.</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>secureBoot</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>secureBoot specifies whether UEFI Secure Boot should be enabled on the virtual machine.
+Secure Boot verifies that the boot components are signed by trusted publishers.
+When not set, this means no opinion and the platform is left to choose a reasonable
+default, which is subject to change over time. The current default is Enabled.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>vtpm</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>vtpm specifies whether the virtual Trusted Platform Module (vTPM) should be enabled
+on the virtual machine. vTPM provides a hardware-based secure store for keys and
+measurements. It is used for measured boot and other security functions.
+When not set, this means no opinion and the platform is left to choose a reasonable
+default, which is subject to change over time. The current default is Enabled.</p>
+</td>
+</tr>
+</tbody>
 </table>
 ###AzureVMImage { #hypershift.openshift.io/v1beta1.AzureVMImage }
 <p>

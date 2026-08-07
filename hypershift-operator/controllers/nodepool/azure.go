@@ -230,10 +230,29 @@ func azureMachineTemplateSpec(nodePool *hyperv1.NodePool, acrIdentityResourceID 
 		}
 	}
 
+	var securityProfile *capiazure.SecurityProfile
 	if nodePool.Spec.Platform.Azure.EncryptionAtHost == "Enabled" {
-		azureMachineTemplate.Template.Spec.SecurityProfile = &capiazure.SecurityProfile{
+		securityProfile = &capiazure.SecurityProfile{
 			EncryptionAtHost: to.Ptr(true),
 		}
+	}
+	if nodePool.Spec.Platform.Azure.SecurityType != "" {
+		if securityProfile == nil {
+			securityProfile = &capiazure.SecurityProfile{}
+		}
+		securityProfile.SecurityType = capiazure.SecurityTypes(nodePool.Spec.Platform.Azure.SecurityType)
+		uefi := &capiazure.UefiSettings{
+			SecureBootEnabled: to.Ptr(true),
+			VTpmEnabled:       to.Ptr(true),
+		}
+		if s := nodePool.Spec.Platform.Azure.UefiSettings; s != nil {
+			uefi.SecureBootEnabled = to.Ptr(s.SecureBoot != "Disabled")
+			uefi.VTpmEnabled = to.Ptr(s.VTpm != "Disabled")
+		}
+		securityProfile.UefiSettings = uefi
+	}
+	if securityProfile != nil {
+		azureMachineTemplate.Template.Spec.SecurityProfile = securityProfile
 	}
 
 	if nodePool.Spec.Platform.Azure.OSDisk.Persistence == hyperv1.EphemeralDiskPersistence {

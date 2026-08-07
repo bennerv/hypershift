@@ -28,7 +28,46 @@ const (
 	Gen2 AzureVMImageGeneration = "Gen2"
 )
 
+// AzureSecurityType specifies the SecurityType of an Azure virtual machine.
+// +kubebuilder:validation:Enum=TrustedLaunch;ConfidentialVM
+type AzureSecurityType string
+
+const (
+	// AzureSecurityTypeTrustedLaunch enables Trusted Launch on the virtual machine,
+	// providing Secure Boot and vTPM capabilities.
+	AzureSecurityTypeTrustedLaunch AzureSecurityType = "TrustedLaunch"
+
+	// AzureSecurityTypeConfidentialVM enables Confidential VM capabilities,
+	// providing hardware-based memory encryption in addition to Secure Boot and vTPM.
+	AzureSecurityTypeConfidentialVM AzureSecurityType = "ConfidentialVM"
+)
+
+// AzureUefiSettings specifies the UEFI security settings for an Azure virtual machine.
+type AzureUefiSettings struct {
+	// secureBoot specifies whether UEFI Secure Boot should be enabled on the virtual machine.
+	// Secure Boot verifies that the boot components are signed by trusted publishers.
+	// When not set, this means no opinion and the platform is left to choose a reasonable
+	// default, which is subject to change over time. The current default is Enabled.
+	//
+	// +kubebuilder:default=Enabled
+	// +kubebuilder:validation:Enum=Enabled;Disabled
+	// +optional
+	SecureBoot string `json:"secureBoot,omitempty"`
+
+	// vtpm specifies whether the virtual Trusted Platform Module (vTPM) should be enabled
+	// on the virtual machine. vTPM provides a hardware-based secure store for keys and
+	// measurements. It is used for measured boot and other security functions.
+	// When not set, this means no opinion and the platform is left to choose a reasonable
+	// default, which is subject to change over time. The current default is Enabled.
+	//
+	// +kubebuilder:default=Enabled
+	// +kubebuilder:validation:Enum=Enabled;Disabled
+	// +optional
+	VTpm string `json:"vtpm,omitempty"`
+}
+
 // AzureNodePoolPlatform is the platform specific configuration for an Azure node pool.
+// +kubebuilder:validation:XValidation:rule="!has(self.uefiSettings) || has(self.securityType)",message="uefiSettings requires securityType to be set"
 type AzureNodePoolPlatform struct {
 	// vmSize is the Azure VM instance type to use for the nodes being created in the nodepool.
 	// The size naming convention is documented here https://learn.microsoft.com/en-us/azure/virtual-machines/vm-naming-conventions.
@@ -79,6 +118,22 @@ type AzureNodePoolPlatform struct {
 	// +kubebuilder:validation:Enum=Enabled;Disabled
 	// +optional
 	EncryptionAtHost string `json:"encryptionAtHost,omitempty"`
+
+	// securityType specifies the SecurityType of the virtual machine. It must be set to enable
+	// UefiSettings (SecureBoot, vTPM). TrustedLaunch enables Secure Boot and vTPM on supported
+	// VM sizes. ConfidentialVM provides hardware-based memory encryption in addition to Secure
+	// Boot and vTPM. Requires a Gen2 VM image. See
+	// https://learn.microsoft.com/en-us/azure/virtual-machines/trusted-launch for more information.
+	//
+	// +optional
+	SecurityType AzureSecurityType `json:"securityType,omitempty"`
+
+	// uefiSettings specifies the UEFI security settings like Secure Boot and vTPM used while
+	// creating the virtual machine. Requires securityType to be set. If securityType is set and
+	// this is omitted, both Secure Boot and vTPM default to Enabled.
+	//
+	// +optional
+	UefiSettings *AzureUefiSettings `json:"uefiSettings,omitempty"`
 
 	// subnetID is the subnet ID of an existing subnet where the nodes in the nodepool will be created. This can be a
 	// different subnet than the one listed in the HostedCluster, HostedCluster.Spec.Platform.Azure.SubnetID, but must

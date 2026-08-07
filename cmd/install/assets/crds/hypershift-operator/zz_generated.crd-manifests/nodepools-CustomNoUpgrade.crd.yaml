@@ -1030,6 +1030,17 @@ spec:
                             minimum: 16
                             type: integer
                         type: object
+                      securityType:
+                        description: |-
+                          securityType specifies the SecurityType of the virtual machine. It must be set to enable
+                          UefiSettings (SecureBoot, vTPM). TrustedLaunch enables Secure Boot and vTPM on supported
+                          VM sizes. ConfidentialVM provides hardware-based memory encryption in addition to Secure
+                          Boot and vTPM. Requires a Gen2 VM image. See
+                          https://learn.microsoft.com/en-us/azure/virtual-machines/trusted-launch for more information.
+                        enum:
+                        - TrustedLaunch
+                        - ConfidentialVM
+                        type: string
                       subnetID:
                         description: |-
                           subnetID is the subnet ID of an existing subnet where the nodes in the nodepool will be created. This can be a
@@ -1075,6 +1086,36 @@ spec:
                           rule: '!self.split(''/'')[10].endsWith(''.'') && !self.split(''/'')[10].endsWith(''-'')'
                         - message: SubnetID is immutable
                           rule: self == oldSelf
+                      uefiSettings:
+                        description: |-
+                          uefiSettings specifies the UEFI security settings like Secure Boot and vTPM used while
+                          creating the virtual machine. Requires securityType to be set. If securityType is set and
+                          this is omitted, both Secure Boot and vTPM default to Enabled.
+                        properties:
+                          secureBoot:
+                            default: Enabled
+                            description: |-
+                              secureBoot specifies whether UEFI Secure Boot should be enabled on the virtual machine.
+                              Secure Boot verifies that the boot components are signed by trusted publishers.
+                              When not set, this means no opinion and the platform is left to choose a reasonable
+                              default, which is subject to change over time. The current default is Enabled.
+                            enum:
+                            - Enabled
+                            - Disabled
+                            type: string
+                          vtpm:
+                            default: Enabled
+                            description: |-
+                              vtpm specifies whether the virtual Trusted Platform Module (vTPM) should be enabled
+                              on the virtual machine. vTPM provides a hardware-based secure store for keys and
+                              measurements. It is used for measured boot and other security functions.
+                              When not set, this means no opinion and the platform is left to choose a reasonable
+                              default, which is subject to change over time. The current default is Enabled.
+                            enum:
+                            - Enabled
+                            - Disabled
+                            type: string
+                        type: object
                       vmSize:
                         description: |-
                           vmSize is the Azure VM instance type to use for the nodes being created in the nodepool.
@@ -1093,6 +1134,9 @@ spec:
                     - subnetID
                     - vmSize
                     type: object
+                    x-kubernetes-validations:
+                    - message: uefiSettings requires securityType to be set
+                      rule: '!has(self.uefiSettings) || has(self.securityType)'
                   gcp:
                     description: gcp specifies the configuration used when operating
                       on GCP.

@@ -141,6 +141,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &hypershiftv1beta1.AzureResourceManagedIdentitiesApplyConfiguration{}
 	case v1beta1.SchemeGroupVersion.WithKind("AzureSwiftSpec"):
 		return &hypershiftv1beta1.AzureSwiftSpecApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("AzureUefiSettings"):
+		return &hypershiftv1beta1.AzureUefiSettingsApplyConfiguration{}
 	case v1beta1.SchemeGroupVersion.WithKind("AzureVMImage"):
 		return &hypershiftv1beta1.AzureVMImageApplyConfiguration{}
 	case v1beta1.SchemeGroupVersion.WithKind("AzureWorkloadIdentities"):
